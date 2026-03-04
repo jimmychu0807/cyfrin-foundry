@@ -12,6 +12,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
  * its answer is unimportant
  */
 contract MockV3Aggregator is AggregatorV3Interface {
+    // forge-lint: disable-next-line(screaming-snake-case-const)
     uint256 public constant version = 4;
 
     uint8 public decimals;
@@ -60,10 +61,12 @@ contract MockV3Aggregator is AggregatorV3Interface {
         returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
     {
         return (
+            // forge-lint: disable-next-line(unsafe-typecast)
             uint80(latestRound),
             getAnswer[latestRound],
             getStartedAt[latestRound],
             getTimestamp[latestRound],
+            // forge-lint: disable-next-line(unsafe-typecast)
             uint80(latestRound)
         );
     }
