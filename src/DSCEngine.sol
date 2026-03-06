@@ -75,7 +75,7 @@ contract DSCEngine is ReentrancyGuard {
         address dscAddress
     ) {
         require(
-            tokenAddresses.length != priceFeedAddresses.length,
+            tokenAddresses.length == priceFeedAddresses.length,
             DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength()
         );
 
@@ -192,14 +192,14 @@ contract DSCEngine is ReentrancyGuard {
     ) internal view returns (uint256 valueUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
-            valueUsd += _getUsdValue(token, s_collateralDeposited[user][token]);
+            valueUsd += getUsdValue(token, s_collateralDeposited[user][token]);
         }
     }
 
-    function _getUsdValue(
+    function getUsdValue(
         address token,
         uint256 amount
-    ) internal view returns (uint256 valueUsd) {
+    ) public view returns (uint256 valueUsd) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
 
