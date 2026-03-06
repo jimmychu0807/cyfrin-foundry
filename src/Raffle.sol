@@ -85,7 +85,7 @@ contract Raffle is VRFConsumerBaseV2 {
     function pickWinner() public {
         if (block.timestamp - s_lastTimeStamp < i_interval) revert();
 
-        uint256 requestId = i_vrfCoordinator.requestRandomWords(
+        i_vrfCoordinator.requestRandomWords(
             i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
     }

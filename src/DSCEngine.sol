@@ -17,6 +17,9 @@ contract DSCEngine is ReentrancyGuard {
     DecentralizedStableCoin immutable i_dsc;
     uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
+    uint256 private constant LIQUIDATION_THRESHOLD = 50;
+    uint256 private constant LIQUIDATION_PRECISION = 100;
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
 
     /////////////////
     // Storage
@@ -38,10 +41,11 @@ contract DSCEngine is ReentrancyGuard {
     // Errors
     /////////////////
     error DSCEngine__HealthFactorOk();
-    error DSCEngine__HealthFactorIsBroken();
+    error DSCEngine__BreakHealthFactor(uint256 userHealthFactor);
     error DSCEngine__NeedsMoreThanZero();
     error DSCEngine__TokenNowAllowed(address);
     error DSCEngine__TransferFailed();
+    error DSCEngine__MintDSCFailed();
     error DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength();
 
     /////////////////
@@ -103,6 +107,12 @@ contract DSCEngine is ReentrancyGuard {
         uint256 amountDscToMint
     ) external moreThanZero(amountDscToMint) nonReentrant {
         s_DSCMinted[msg.sender] += amountDscToMint;
+
+        _revertIfHealthFactorIsBroken(msg.sender);
+
+        bool minted = i_dsc.mint(msg.sender, amountDscToMint);
+
+        require(minted, DSCEngine__MintDSCFailed());
     }
 
     function depositCollateralAndMintDsc() external {}
@@ -153,13 +163,21 @@ contract DSCEngine is ReentrancyGuard {
     function _revertIfHealthFactorIsBroken(
         address user
     ) internal view {
-        require(_healthFactor(user) >= 1, DSCEngine__HealthFactorIsBroken());
+        uint256 userHealthFactor = _healthFactor(user);
+        require(
+            userHealthFactor >= MIN_HEALTH_FACTOR, DSCEngine__BreakHealthFactor(userHealthFactor)
+        );
     }
 
     function _healthFactor(
         address user
-    ) internal view returns (uint256) {
+    ) internal view returns (uint256 healthFactor) {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
+
+        uint256 collateralAdjustedForThreshold =
+            collateralValueInUsd * LIQUIDATION_THRESHOLD / LIQUIDATION_PRECISION;
+
+        healthFactor = collateralAdjustedForThreshold * PRECISION / totalDscMinted;
     }
 
     function _getAccountInformation(
@@ -171,7 +189,7 @@ contract DSCEngine is ReentrancyGuard {
 
     function _getAccountCollateralValue(
         address user
-    ) internal pure returns (uint256 valueUsd) {
+    ) internal view returns (uint256 valueUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
             valueUsd += _getUsdValue(token, s_collateralDeposited[user][token]);
@@ -181,10 +199,11 @@ contract DSCEngine is ReentrancyGuard {
     function _getUsdValue(
         address token,
         uint256 amount
-    ) internal returns (uint256 valueUsd) {
+    ) internal view returns (uint256 valueUsd) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
 
+        // forge-lint: disable-next-line(unsafe-typecast)
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
     }
 
@@ -199,6 +218,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
 
+        // forge-lint: disable-next-line(unsafe-typecast)
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }
 }
