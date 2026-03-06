@@ -21,3 +21,12 @@ exclude_lints = [
   "unwrapped-modifier-logic",
   "unchecked-call"
 ]
+
+[fmt]
+line_length = 100
+tab_width = 4
+int_types = "long"
+multiline_func_header = "params_first"
+quote_style = "double"
+number_underscore = "thousands"
+single_line_statement_blocks = "preserve"

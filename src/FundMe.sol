@@ -3,7 +3,9 @@
 pragma solidity ^0.8.19;
 
 // 2. Imports
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {
+    AggregatorV3Interface
+} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
 
 // 3. Interfaces, Libraries, Contracts
@@ -44,14 +46,18 @@ contract FundMe {
     //// private
     //// view / pure
 
-    constructor(address priceFeed) {
+    constructor(
+        address priceFeed
+    ) {
         s_priceFeed = AggregatorV3Interface(priceFeed);
         i_owner = msg.sender;
     }
 
     /// @notice Funds our contract based on the ETH/USD price
     function fund() public payable {
-        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!");
+        require(
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!"
+        );
         // require(PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD, "You need to spend more ETH!");
         s_addressToAmountFunded[msg.sender] += msg.value;
         s_funders.push(msg.sender);
@@ -93,7 +99,9 @@ contract FundMe {
      *  @param fundingAddress the address of the funder
      *  @return the amount funded
      */
-    function getAddressToAmountFunded(address fundingAddress) public view returns (uint256) {
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) public view returns (uint256) {
         return s_addressToAmountFunded[fundingAddress];
     }
 
@@ -101,7 +109,9 @@ contract FundMe {
         return s_priceFeed.version();
     }
 
-    function getFunder(uint256 index) public view returns (address) {
+    function getFunder(
+        uint256 index
+    ) public view returns (address) {
         return s_funders[index];
     }
 

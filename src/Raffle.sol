@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+import {
+    VRFCoordinatorV2Interface
+} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 
 // Layout of the contract file:
@@ -88,7 +90,10 @@ contract Raffle is VRFConsumerBaseV2 {
         );
     }
 
-    function fulfillRandomWords(uint256 requiestId, uint256[] memory randomWords) internal override {}
+    function fulfillRandomWords(
+        uint256 requiestId,
+        uint256[] memory randomWords
+    ) internal override {}
 
     /**
      * Getter Function

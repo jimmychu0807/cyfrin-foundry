@@ -17,7 +17,7 @@ contract HelperConfig is Script {
     constructor() {
         // If we are on a local Anvil, we deploy the mocks
         // Else, grab the existing address from the live network
-        if (block.chainid == 11155111) {
+        if (block.chainid == 11_155_111) {
             activeNetworkConfig = getSepoliaEthConfig();
         } else {
             activeNetworkConfig = getOrCreateAnvilEthConfig();

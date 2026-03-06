@@ -28,7 +28,7 @@ contract FundMeTest is Test {
     }
 
     function testPriceFeedVersionIsAccurate() public view {
-        if (block.chainid == 11155111) {
+        if (block.chainid == 11_155_111) {
             uint256 version = fundMe.getVersion();
             assertEq(version, 4);
         } else if (block.chainid == 1) {
@@ -113,6 +113,8 @@ contract FundMeTest is Test {
 
         assert(address(fundMe).balance == 0);
         assert(startingFundMeBalance + startingOwnerBalance == fundMe.getOwner().balance);
-        assert((numberOfFunders + 1) * SEND_VALUE == fundMe.getOwner().balance - startingOwnerBalance);
+        assert(
+            (numberOfFunders + 1) * SEND_VALUE == fundMe.getOwner().balance - startingOwnerBalance
+        );
     }
 }
