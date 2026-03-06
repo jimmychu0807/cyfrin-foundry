@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import {Script} from "forge-std/Script.sol";
 import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
-import {ERC20Ownable} from "../test/mocks/ERC20Ownable.sol";
+import {ERC20Mock} from "../test/mocks/ERC20Mock.sol";
 
 contract DeployDSCHelperConfig is Script {
     struct NetworkConfig {
@@ -56,10 +56,10 @@ contract DeployDSCHelperConfig is Script {
         vm.startBroadcast();
 
         MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(DECIMALS, ETH_USD_PRICE);
-        ERC20Ownable wethMock = new ERC20Ownable("WETH", "WETH", msg.sender, 1000e8);
+        ERC20Mock wethMock = new ERC20Mock("WETH", "WETH", msg.sender, 1000e8);
 
         MockV3Aggregator btcUsdPriceFeed = new MockV3Aggregator(DECIMALS, BTC_USD_PRICE);
-        ERC20Ownable wbtcMock = new ERC20Ownable("WBTC", "WBTC", msg.sender, 1000e8);
+        ERC20Mock wbtcMock = new ERC20Mock("WBTC", "WBTC", msg.sender, 1000e8);
 
         vm.stopBroadcast();
         anvilNetworkConfig = NetworkConfig({
