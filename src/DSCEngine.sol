@@ -258,6 +258,12 @@ contract DSCEngine is ReentrancyGuard {
 
     function getHealthFactor() external view {}
 
+    function getAccountInformation(
+        address user
+    ) external view returns (uint256, uint256) {
+        return _getAccountInformation(user);
+    }
+
     function getCollateralTokens() external view returns (address[] memory) {
         return s_collateralTokens;
     }
@@ -296,6 +302,10 @@ contract DSCEngine is ReentrancyGuard {
 
         // forge-lint: disable-next-line(unsafe-typecast)
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
+    }
+
+    function getCollateralBalanceOfUser(address user, address collateral) external view returns (uint256) {
+        return s_collateralDeposited[user][collateral];
     }
 
     function calculateHealthFactor(

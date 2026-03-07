@@ -35,7 +35,7 @@ contract Handler is Test {
         btcUsdPriceFeed = MockV3Aggregator(engine.getCollateralTokenPriceFeed(address(wbtc)));
     }
 
-    function mintAndDepositCollateral(
+    function depositCollateral(
         uint256 collateralSeed,
         uint256 amountCollateral
     ) public {
@@ -47,6 +47,31 @@ contract Handler is Test {
         collateral.approve(address(engine), amountCollateral);
         engine.depositCollateral(address(collateral), amountCollateral);
 
+        vm.stopPrank();
+    }
+
+    function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+        ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
+        uint256 maxCollateral = engine.getCollateralBalanceOfUser(msg.sender, address(collateral));
+
+        amountCollateral = bound(amountCollateral, 0, maxCollateral);
+        if (amountCollateral == 0) return;
+
+        vm.prank(msg.sender);
+        engine.redeemCollateral(address(collateral), amountCollateral);
+    }
+
+    function mintDsc(uint256 amount) public {
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = engine.getAccountInformation(msg.sender);
+
+        uint256 maxDscToMint = (collateralValueInUsd / 2) - totalDscMinted;
+        if (maxDscToMint == 0) return;
+
+        amount = bound(maxDscToMint, 0, MAX_DEPOSIT_SIZE);
+        if (amount == 0) return;
+
+        vm.startPrank(msg.sender);
+        engine.mintDsc(amount);
         vm.stopPrank();
     }
 

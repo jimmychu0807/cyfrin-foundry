@@ -39,6 +39,8 @@ contract InvariantsTest is StdInvariant, Test {
         uint256 wethValue = engine.getUsdValue(weth, totalWethDeposited);
         uint256 wbtcValue = engine.getUsdValue(wbtc, totalWbtcDeposited);
 
+        console.log("weth: %s", weth);
+        console.log("wbtc: %s", wbtc);
         console.log("totalSupply: %s", totalSupply);
         console.log("wethValue: %s", wethValue);
         console.log("wbtcValue: %s", wbtcValue);
