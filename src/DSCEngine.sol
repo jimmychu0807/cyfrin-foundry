@@ -203,8 +203,8 @@ contract DSCEngine is ReentrancyGuard {
         emit CollateralRedeemed(from, to, tokenCollateralAddress, amountCollateral);
 
         // self-note: this line is different from the code
-        // bool success = IERC20(tokenCollateralAddress).transfer(to, amountCollateral);
-        bool success = IERC20(tokenCollateralAddress).transferFrom(from, to, amountCollateral);
+        bool success = IERC20(tokenCollateralAddress).transfer(to, amountCollateral);
+        // bool success = IERC20(tokenCollateralAddress).transferFrom(from, to, amountCollateral);
         require(success, DSCEngine__TransferFailed());
 
         _revertIfHealthFactorIsBroken(msg.sender);
@@ -257,6 +257,16 @@ contract DSCEngine is ReentrancyGuard {
     /////////////////
 
     function getHealthFactor() external view {}
+
+    function getCollateralTokens() external view returns (address[] memory) {
+        return s_collateralTokens;
+    }
+
+    function getCollateralTokenPriceFeed(
+        address tokenAddr
+    ) external view returns (address) {
+        return s_priceFeeds[tokenAddr];
+    }
 
     function getAdditionalFeedPrecision() external pure returns (uint256) {
         return ADDITIONAL_FEED_PRECISION;

@@ -30,3 +30,11 @@ multiline_func_header = "params_first"
 quote_style = "double"
 number_underscore = "thousands"
 single_line_statement_blocks = "preserve"
+
+[fuzz]
+runs = 999
+
+[invariant]
+runs = 16
+depth = 16
+fail_on_revert = true

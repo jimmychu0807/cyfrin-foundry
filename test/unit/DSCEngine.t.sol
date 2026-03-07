@@ -104,8 +104,8 @@ contract DSCEngineTest is Test {
     function testRevertsIfMintedDscBreaksHealthFactor() public {
         (, int256 price,,,) = MockV3Aggregator(ethUsdPriceFeed).latestRoundData();
 
-        // forge-lint: disable-next-line(unsafe-typecast)
         uint256 amountToMint = AMOUNT_COLLATERAL
+            // forge-lint: disable-next-line(unsafe-typecast)
             * (uint256(price) * engine.getAdditionalFeedPrecision()) / engine.getPrecision();
 
         vm.startPrank(user);
