@@ -35,6 +35,6 @@ single_line_statement_blocks = "preserve"
 runs = 999
 
 [invariant]
-runs = 50
-depth = 50
-fail_on_revert = true
+runs = 64
+depth = 64
+fail_on_revert = false

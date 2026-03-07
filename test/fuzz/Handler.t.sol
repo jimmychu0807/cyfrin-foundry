@@ -17,8 +17,11 @@ contract Handler is Test {
     ERC20Mock weth;
     ERC20Mock wbtc;
 
-    // ghost variables
     uint96 public constant MAX_DEPOSIT_SIZE = type(uint96).max;
+
+    // ghost variables
+    uint256 public timesMintIsCalled;
+    address[] usersWithCollateralDeposited;
 
     constructor(
         DSCEngine _engine,
@@ -48,21 +51,40 @@ contract Handler is Test {
         engine.depositCollateral(address(collateral), amountCollateral);
 
         vm.stopPrank();
+
+        usersWithCollateralDeposited.push(msg.sender);
     }
 
-    function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+    function redeemCollateral(
+        uint256 addressSeed,
+        uint256 collateralSeed,
+        uint256 amountCollateral
+    ) public {
+        if (usersWithCollateralDeposited.length == 0) return;
+
+        address sender =
+            usersWithCollateralDeposited[addressSeed % usersWithCollateralDeposited.length];
+
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
-        uint256 maxCollateral = engine.getCollateralBalanceOfUser(msg.sender, address(collateral));
+        uint256 maxCollateral = engine.getCollateralBalanceOfUser(sender, address(collateral));
 
         amountCollateral = bound(amountCollateral, 0, maxCollateral);
         if (amountCollateral == 0) return;
 
-        vm.prank(msg.sender);
+        vm.prank(sender);
         engine.redeemCollateral(address(collateral), amountCollateral);
     }
 
-    function mintDsc(uint256 amount) public {
-        (uint256 totalDscMinted, uint256 collateralValueInUsd) = engine.getAccountInformation(msg.sender);
+    function mintDsc(
+        uint256 amount,
+        uint256 addressSeed
+    ) public {
+        if (usersWithCollateralDeposited.length == 0) return;
+
+        address sender =
+            usersWithCollateralDeposited[addressSeed % usersWithCollateralDeposited.length];
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) =
+            engine.getAccountInformation(sender);
 
         uint256 maxDscToMint = (collateralValueInUsd / 2) - totalDscMinted;
         if (maxDscToMint == 0) return;
@@ -70,9 +92,11 @@ contract Handler is Test {
         amount = bound(maxDscToMint, 0, MAX_DEPOSIT_SIZE);
         if (amount == 0) return;
 
-        vm.startPrank(msg.sender);
+        vm.startPrank(sender);
         engine.mintDsc(amount);
         vm.stopPrank();
+
+        timesMintIsCalled++;
     }
 
     function _getCollateralFromSeed(
