@@ -15,8 +15,7 @@ contract DeployBox is Script {
     function deployBox() internal returns (address) {
         vm.startBroadcast();
         BoxV1 box = new BoxV1(); // impl
-        ERC1967Proxy proxy = new ERC1967Proxy(address(box), "");
-        BoxV1(address(proxy)).initialize();
+        ERC1967Proxy proxy = new ERC1967Proxy(address(box), abi.encodeCall(BoxV1.initialize, ()));
         vm.stopBroadcast();
 
         return address(proxy);
@@ -30,12 +29,16 @@ contract UpgradeBox is Script {
 
         vm.startBroadcast();
         BoxV2 newBox = new BoxV2();
+        address proxy = upgradeBox(recentDeployment, address(newBox));
         vm.stopBroadcast();
 
-        address proxy = upgradeBox(recentDeployment, address(newBox));
+        return proxy;
     }
 
-    function upgradeBox(address proxyAddress, address newBox) public returns (address) {
+    function upgradeBox(
+        address proxyAddress,
+        address newBox
+    ) public returns (address) {
         vm.startBroadcast();
         BoxV1 proxy = BoxV1(proxyAddress);
         proxy.upgradeToAndCall(address(newBox), "");
