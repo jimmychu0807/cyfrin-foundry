@@ -2,7 +2,11 @@
 pragma solidity ^0.8.18;
 
 import {Test, console} from "forge-std/Test.sol";
-import {SmallProxy, ImplementationA, ImplementationB} from "../../src/SmallProxy.sol";
+import {
+    SmallProxy,
+    ImplementationA,
+    ImplementationB
+} from "../../src/upgradeable-contract/SmallProxy.sol";
 
 contract SmallProxyTest is Test {
     SmallProxy proxy;
@@ -35,6 +39,8 @@ contract SmallProxyTest is Test {
         console.logBytes(data);
 
         (bool success,) = address(proxy).call(data);
+        require(success, "call failed");
+
         uint256 storageVal = proxy.readStorage();
         assertEq(storageVal, uint256(779), "left and right should be equal");
     }
