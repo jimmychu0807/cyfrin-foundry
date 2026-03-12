@@ -6,8 +6,6 @@ import {MinimalAccount} from "src/account-abstraction/ethereum/MinimalAccount.so
 import {HelperConfig, NetworkConfig} from "./HelperConfig.s.sol"; // Relative path to HelperConfig
 
 contract DeployMinimal is Script {
-    address constant SCW_OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
     function deployMinimalAccount()
         public
         returns (HelperConfig helperConfigInstance, MinimalAccount minimalAccountContract)
@@ -18,7 +16,7 @@ contract DeployMinimal is Script {
 
         vm.startBroadcast(config.account); // Use the burner wallet from config for broadcasting
 
-        MinimalAccount minimalAccount = new MinimalAccount(config.entryPoint, SCW_OWNER);
+        MinimalAccount minimalAccount = new MinimalAccount(config.entryPoint, config.account);
 
         vm.stopBroadcast();
 

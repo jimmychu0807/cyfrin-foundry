@@ -80,9 +80,9 @@ contract MinimalAccountTest is Test {
 
     function testRecoverSignedOp() public {
         // Arrange
-        uint256 AMOUNT = 100e6;
+        uint256 usdcAmt = 100e6;
         bytes memory functionDataForUSDCMint =
-            abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), AMOUNT));
+            abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), usdcAmt));
 
         bytes memory executeCallData =
             abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionDataForUSDCMint));
