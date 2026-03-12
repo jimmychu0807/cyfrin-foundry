@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 
 import {MinimalAccount} from "src/account-abstraction/ethereum/MinimalAccount.sol";
 import {DeployMinimal} from "script/account-abstraction/ethereum/DeployMinimal.s.sol";
@@ -91,8 +91,9 @@ contract MinimalAccountTest is Test {
             abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionDataForUSDCMint));
 
         // Generate the signedPackedUserOperation
-        PackedUserOperation memory packedUserOp =
-            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
+        PackedUserOperation memory packedUserOp = sendPackedUserOpScript.generateSignedUserOperation(
+            executeCallData, networkConfig, address(minimalAccount)
+        );
 
         // Get the userOpHash
         bytes32 userOperationHash =
@@ -118,8 +119,9 @@ contract MinimalAccountTest is Test {
             abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionData));
 
         // Generate the signedPackedUserOperation
-        PackedUserOperation memory packedUserOp =
-            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
+        PackedUserOperation memory packedUserOp = sendPackedUserOpScript.generateSignedUserOperation(
+            executeCallData, networkConfig, address(minimalAccount)
+        );
 
         // Get the userOpHash
         bytes32 userOperationHash =
@@ -147,12 +149,15 @@ contract MinimalAccountTest is Test {
             abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionData));
 
         // Generate the signedPackedUserOperation
-        PackedUserOperation memory packedUserOp =
-            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
+        PackedUserOperation memory packedUserOp = sendPackedUserOpScript.generateSignedUserOperation(
+            executeCallData, networkConfig, address(minimalAccount)
+        );
 
-        // todo: debug this
-        // vm.deal(address(minimalAccount), 10e18);
-        // vm.deal(randomUser, 1e18);
+        // Deposit to the entrypoint stake manager
+        vm.deal(address(minimalAccount), 10e18);
+        vm.prank(address(minimalAccount));
+        (bool success,) = networkConfig.entryPoint.call{value: 1e17}("");
+        require(success, "transfer failed");
 
         // Act
         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
