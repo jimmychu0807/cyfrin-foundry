@@ -5,15 +5,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import {IAccount} from "lib/account-abstraction/contracts/interfaces/IAccount.sol";
-import {
-    PackedUserOperation
-} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
-import {
-    SIG_VALIDATION_FAILED,
-    SIG_VALIDATION_SUCCESS
-} from "lib/account-abstraction/contracts/core/Helpers.sol";
-import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {IAccount} from "@aa/contracts/interfaces/IAccount.sol";
+import {PackedUserOperation} from "@aa/contracts/interfaces/PackedUserOperation.sol";
+import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "@aa/contracts/core/Helpers.sol";
+import {IEntryPoint} from "@aa/contracts/interfaces/IEntryPoint.sol";
 
 // The flow for ERC-4337 typically involves an EntryPoint contract
 // calling into this account contract.
