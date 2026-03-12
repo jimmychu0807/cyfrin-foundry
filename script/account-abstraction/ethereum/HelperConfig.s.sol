@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
+import {EntryPoint} from "@aa/contracts/core/EntryPoint.sol";
+
+struct NetworkConfig {
+    address entryPoint;
+    address account; // Deployer/burner wallet address
+}
 
 contract HelperConfig is Script {
-    struct NetworkConfig {
-        address entryPoint;
-        address account; // Deployer/burner wallet address
-    }
-
     // Chain ID Constants
     uint256 constant ETH_SEPOLIA_CID = 11_155_111;
     uint256 constant ZKSYNC_SEPOLIA_CID = 300;
@@ -44,9 +45,16 @@ contract HelperConfig is Script {
             return localNetworkConfig;
         }
 
-        NetworkConfig memory sepoliaConfig = getEthSepoliaConfig();
+        console.log("Deploying mocks for Anvil...");
+        vm.startBroadcast(BURNER_WALLET);
+
+        EntryPoint entryPoint = new EntryPoint();
+
+        vm.stopBroadcast();
+
         localNetworkConfig =
-            NetworkConfig({entryPoint: sepoliaConfig.entryPoint, account: BURNER_WALLET});
+            NetworkConfig({entryPoint: address(entryPoint), account: BURNER_WALLET});
+
         return localNetworkConfig;
     }
 
