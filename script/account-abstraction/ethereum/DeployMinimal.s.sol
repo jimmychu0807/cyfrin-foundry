@@ -11,13 +11,10 @@ contract DeployMinimal is Script {
         returns (HelperConfig helperConfigInstance, MinimalAccount minimalAccountContract)
     {
         HelperConfig helperConfig = new HelperConfig();
-
         NetworkConfig memory config = helperConfig.getConfig();
 
         vm.startBroadcast(config.account); // Use the burner wallet from config for broadcasting
-
         MinimalAccount minimalAccount = new MinimalAccount(config.entryPoint, config.account);
-
         vm.stopBroadcast();
 
         return (helperConfig, minimalAccount);

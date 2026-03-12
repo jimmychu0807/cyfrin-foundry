@@ -12,9 +12,10 @@ import {
 } from "script/account-abstraction/ethereum/SendPackedUserOp.s.sol";
 
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
-import {IEntryPoint} from "@aa/contracts/interfaces/IEntryPoint.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {IEntryPoint} from "@aa/contracts/interfaces/IEntryPoint.sol";
+import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "@aa/contracts/core/Helpers.sol";
 
 using MessageHashUtils for bytes32;
 
@@ -34,14 +35,16 @@ contract MinimalAccountTest is Test {
     function setUp() public {
         DeployMinimal deployMinimal = new DeployMinimal();
         (helperConfig, minimalAccount) = deployMinimal.deployMinimalAccount();
-        vm.label(address(minimalAccount), "SCW");
+        networkConfig = helperConfig.getConfig();
 
         usdc = new ERC20Mock();
 
         sendPackedUserOpScript = new SendPackedUserOp();
-        helperConfig = new HelperConfig();
-        networkConfig = helperConfig.getOrCreateLocalEthConfig();
         sendPackedUserOpScript.setUp(helperConfig);
+
+        vm.label(address(minimalAccount), "SCW");
+        vm.label(address(networkConfig.account), "SCW_OWNER");
+        vm.label(address(networkConfig.entryPoint), "ENTRYPOINT");
     }
 
     function testOwnerCanExecuteCommands() public {
@@ -78,7 +81,7 @@ contract MinimalAccountTest is Test {
         minimalAccount.execute(dest, value, functionData);
     }
 
-    function testRecoverSignedOp() public {
+    function testRecoverSignedOp() public view {
         // Arrange
         uint256 usdcAmt = 100e6;
         bytes memory functionDataForUSDCMint =
@@ -89,7 +92,7 @@ contract MinimalAccountTest is Test {
 
         // Generate the signedPackedUserOperation
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig);
+            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
 
         // Get the userOpHash
         bytes32 userOperationHash =
@@ -101,5 +104,64 @@ contract MinimalAccountTest is Test {
 
         // Assert
         assertEq(actualSigner, minimalAccount.owner(), "Signer recovery failed");
+    }
+
+    function testValidationOfUserOps() public {
+        // Arrange
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0);
+        uint256 usdcAmt = 100e6;
+
+        bytes memory functionData =
+            abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), usdcAmt));
+
+        bytes memory executeCallData =
+            abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionData));
+
+        // Generate the signedPackedUserOperation
+        PackedUserOperation memory packedUserOp =
+            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
+
+        // Get the userOpHash
+        bytes32 userOperationHash =
+            IEntryPoint(networkConfig.entryPoint).getUserOpHash(packedUserOp);
+
+        uint256 missingAccountFunds = 1e18;
+
+        // Act
+        vm.prank(address(networkConfig.entryPoint));
+        uint256 validationData =
+            minimalAccount.validateUserOp(packedUserOp, userOperationHash, missingAccountFunds);
+
+        assertEq(validationData, SIG_VALIDATION_SUCCESS);
+    }
+
+    function testEntryPointCanExecuteCommands() public {
+        // Arrange
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0);
+        uint256 usdcAmt = 100e6;
+
+        bytes memory functionData =
+            abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), usdcAmt));
+
+        bytes memory executeCallData =
+            abi.encodeCall(minimalAccount.execute, (address(usdc), 0, functionData));
+
+        // Generate the signedPackedUserOperation
+        PackedUserOperation memory packedUserOp =
+            sendPackedUserOpScript.generateSignedUserOperation(executeCallData, networkConfig, address(minimalAccount));
+
+        // todo: debug this
+        // vm.deal(address(minimalAccount), 10e18);
+        // vm.deal(randomUser, 1e18);
+
+        // Act
+        PackedUserOperation[] memory ops = new PackedUserOperation[](1);
+        ops[0] = packedUserOp;
+
+        vm.prank(randomUser);
+        IEntryPoint(networkConfig.entryPoint).handleOps(ops, payable(randomUser));
+
+        // Assert
+        assertEq(usdc.balanceOf(address(minimalAccount)), usdcAmt);
     }
 }
