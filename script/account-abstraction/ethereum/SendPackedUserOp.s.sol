@@ -25,12 +25,13 @@ contract SendPackedUserOp is Script {
 
     function generateSignedUserOperation(
         bytes memory callData,
-        NetworkConfig memory config
-    ) public returns (PackedUserOperation memory) {
-        uint256 nonce = IEntryPoint(config.entryPoint).getNonce(config.account, 0);
+        NetworkConfig memory config,
+        address minimalAccount
+    ) public view returns (PackedUserOperation memory) {
+        uint256 nonce = IEntryPoint(config.entryPoint).getNonce(minimalAccount, 0);
 
         PackedUserOperation memory op =
-            _generateSignedUserOperation(callData, config.account, nonce);
+            _generateSignedUserOperation(callData, minimalAccount, nonce);
 
         bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(op);
 

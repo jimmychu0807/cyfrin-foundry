@@ -17,6 +17,7 @@ contract HelperConfig is Script {
 
     // First acct
     address constant BURNER_WALLET = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     // State Variable
     NetworkConfig public localNetworkConfig;
@@ -46,14 +47,12 @@ contract HelperConfig is Script {
         }
 
         console.log("Deploying mocks for Anvil...");
-        vm.startBroadcast(BURNER_WALLET);
-
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
         EntryPoint entryPoint = new EntryPoint();
-
         vm.stopBroadcast();
 
         localNetworkConfig =
-            NetworkConfig({entryPoint: address(entryPoint), account: BURNER_WALLET});
+            NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_ACCOUNT});
 
         return localNetworkConfig;
     }
